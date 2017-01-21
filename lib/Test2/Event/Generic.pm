@@ -11,10 +11,13 @@ BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase;
 
 my @FIELDS = qw{
-    causes_fail increments_count diagnostics no_display callback terminate
-    global sets_plan summary
+    causes_fail assertion_fail increments_count diagnostics no_display callback
+    terminate global sets_plan summary directive reason
 };
 my %DEFAULTS = (
+    assertion_fail   => undef,
+    directive        => undef,
+    reason           => undef,
     causes_fail      => 0,
     increments_count => 0,
     diagnostics      => 0,
@@ -24,6 +27,11 @@ my %DEFAULTS = (
 sub init {
     my $self = shift;
 
+    my @fields = grep {$_ ne 'sets_plan'} sort @FIELDS;
+
+    # This must be last because of directive and reason
+    push @fields => 'sets_plan';
+
     for my $field (@FIELDS) {
         my $val = defined $self->{$field} ? delete $self->{$field} : $DEFAULTS{$field};
         next unless defined $val;
@@ -32,6 +40,8 @@ sub init {
         $self->$set($val);
     }
 }
+
+#TODO: Override set_directive and set_reason to also change any array inside of 'sets_plan'
 
 for my $field (@FIELDS) {
     no strict 'refs';
@@ -115,10 +125,27 @@ sub set_sets_plan {
         return undef;
     }
 
-    croak "'sets_plan' must be an array reference"
-        unless ref($plan) && reftype($plan) eq 'ARRAY';
+    my $type = ref($plan) || '';
 
-    $self->{sets_plan} = $plan;
+    my ($max, $directive, $reason);
+
+    if ($type eq 'ARRAY') {
+        ($max, $directive, $reason) = @$plan;
+    }
+    elsif ($plan =~ m/^\d+$/) {
+        $max = $plan;
+    }
+    else {
+        croak "'sets_plan' must be an array reference or an integer";
+    }
+
+    $directive = $self->directive
+        unless defined $directive;
+
+    $reason = $self->reason
+        unless defined $directive;
+
+    $self->{sets_plan} = [$max, $directive, $reason];
 }
 
 1;

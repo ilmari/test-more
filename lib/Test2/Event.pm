@@ -10,9 +10,12 @@ use Test2::Util qw(pkg_to_file);
 use Test2::Util::Trace;
 
 sub causes_fail      { 0 }
+sub assertion_fail   { 0 }
 sub increments_count { 0 }
 sub diagnostics      { 0 }
 sub no_display       { 0 }
+sub directive        { undef }
+sub reason           { undef }
 
 sub callback { }
 
@@ -120,9 +123,31 @@ generated
 Returns true if this event should result in a test failure. In general this
 should be false.
 
+=item $bool = $e->assertion_fail
+
+Return true if an assertion was made that failed. This will almost always match
+the value of C<< $e->causes_fail >>, but will be different for cases like
+'TODO' where the assertion failed, but it was expected, so it does not cause a
+failure.
+
 =item $bool = $e->increments_count
 
 Should be true if this event should result in a test count increment.
+
+=item $string = $e->directive
+
+If the event has a directive associated with it then it should go here. Plans
+use directives such as 'skip_all'. Some assertions may use a 'skip' or 'todo'
+directive. These are informative and MAY be ignored by formatters.
+
+This should return C<undef> when there is no directive, some formatters MAY
+see an empty string as a directive.
+
+=item $reason = $e->reason
+
+If a directive is set than this MAY provide a string explaining the reason
+behind the directive. This should NEVER return anything but C<undef> when there
+is no directive.
 
 =item $e->callback($hub)
 
