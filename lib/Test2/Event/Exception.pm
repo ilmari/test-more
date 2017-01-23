@@ -17,6 +17,9 @@ sub summary {
 }
 
 sub diagnostics { 1 }
+sub gravity     { 100 }
+sub diag        { ["Exception: $_[0]->{+ERROR}"] }
+sub diag_data   { my $e = $_[0]->{+ERROR}; ref($e) ? $e : undef }
 
 1;
 

@@ -7,6 +7,7 @@ our $VERSION = '1.302077';
 BEGIN { require Test2::Event::Diag; our @ISA = qw(Test2::Event::Diag) }
 
 sub diagnostics { 0 }
+sub gravity { 0 }
 
 1;
 

@@ -639,20 +639,32 @@ sub ok {
     my $subevents  = delete $self->{subevents};
     my $subtest_id = delete $self->{subtest_id};
     my $subtest_buffered = delete $self->{subtest_buffered};
-    my $epkg = 'Test2::Event::Ok';
+
+    my $e;
     if ($subevents) {
-        $epkg = 'Test2::Event::Subtest';
-        push @attrs => (subevents => $subevents, subtest_id => $subtest_id, buffered => $subtest_buffered);
+        $e = Test2::Event::Subtest->new(
+            trace          => bless({%$trace}, 'Test2::Util::Trace'),
+            pass           => $test,
+            name           => $name,
+            effective_pass => $test,
+            subevents      => $subevents,
+            subtest_id     => $subtest_id,
+            buffered       => $subtest_buffered,
+            _meta => {'Test::Builder' => $result},
+        );
+    }
+    else {
+        $e = bless {
+            trace          => bless({%$trace}, 'Test2::Util::Trace'),
+            pass           => $test,
+            name           => $name,
+            effective_pass => $test,
+            _meta => {'Test::Builder' => $result},
+            @attrs,
+            },
+            'Test2::Event::Ok';
     }
 
-    my $e = bless {
-        trace => bless( {%$trace}, 'Test2::Util::Trace'),
-        pass  => $test,
-        name  => $name,
-        _meta => {'Test::Builder' => $result},
-        effective_pass => $test,
-        @attrs,
-    }, $epkg;
     $hub->send($e);
 
     $self->_ok_debug($trace, $orig_name) unless($test);

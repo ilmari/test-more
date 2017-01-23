@@ -6,7 +6,7 @@ our $VERSION = '1.302077';
 
 
 BEGIN { require Test2::Hub; our @ISA = qw(Test2::Hub) }
-use Test2::Util::HashBase qw/nested bailed_out exit_code manual_skip_all id/;
+use Test2::Util::HashBase qw/nested exit_code manual_skip_all id/;
 use Test2::Util qw/get_tid/;
 
 my $ID = 1;
@@ -23,7 +23,6 @@ sub process {
     my ($e) = @_;
     $e->set_nested($self->nested);
     $e->set_in_subtest($self->{+ID});
-    $self->set_bailed_out($e) if $e->isa('Test2::Event::Bail');
     $self->SUPER::process($e);
 }
 

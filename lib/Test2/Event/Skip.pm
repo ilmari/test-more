@@ -10,11 +10,12 @@ use Test2::Util::HashBase qw{reason};
 
 sub init {
     my $self = shift;
-    $self->SUPER::init;
-    $self->{+EFFECTIVE_PASS} = 1;
+    $self->SUPER::init();
 }
 
 sub causes_fail { 0 }
+
+sub assertion_skipped { my $why = $_[0]->{+REASON}; return defined($why) ? \$why : 1 }
 
 sub summary {
     my $self = shift;

@@ -293,6 +293,8 @@ sub process {
 
     my $callback = $e->callback($self) unless $is_ok || $no_fail;
 
+    $self->set_bailed_out($e) if $e->stop_everything;
+
     my $count = $self->{+COUNT};
 
     $self->{+_FORMATTER}->write($e, $count) if $self->{+_FORMATTER};

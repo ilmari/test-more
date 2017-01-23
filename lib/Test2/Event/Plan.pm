@@ -15,7 +15,12 @@ my %ALLOWED = (
     'NO PLAN' => 1,
 );
 
+sub plan_info { $_[0]->{+REASON} }
+sub plan      { $_[0]->{+DIRECTIVE} || $_[0]->{+MAX} }
+
 sub init {
+    $_[0]->SUPER::init();
+
     if ($_[0]->{+DIRECTIVE}) {
         $_[0]->{+DIRECTIVE} = 'SKIP'    if $_[0]->{+DIRECTIVE} eq 'skip_all';
         $_[0]->{+DIRECTIVE} = 'NO PLAN' if $_[0]->{+DIRECTIVE} eq 'no_plan';
@@ -44,17 +49,6 @@ sub sets_plan {
         $self->{+DIRECTIVE},
         $self->{+REASON},
     );
-}
-
-sub callback {
-    my $self = shift;
-    my ($hub) = @_;
-
-    $hub->plan($self->{+DIRECTIVE} || $self->{+MAX});
-
-    return unless $self->{+DIRECTIVE};
-
-    $hub->set_skip_reason($self->{+REASON} || 1) if $self->{+DIRECTIVE} eq 'SKIP';
 }
 
 sub terminate {

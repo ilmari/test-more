@@ -4,64 +4,52 @@ use warnings;
 
 our $VERSION = '1.302077';
 
-
 BEGIN { require Test2::Event::Ok; our @ISA = qw(Test2::Event::Ok) }
-use Test2::Util::HashBase qw{subevents buffered subtest_id};
+use Test2::Util::HashBase;
+
+sub default_name { "Nameless Subtest" }
 
 sub init {
-	my $self = shift;
-	$self->SUPER::init();
-	$self->{+SUBEVENTS} ||= [];
-	if ($self->{+EFFECTIVE_PASS}) {
-		$_->set_effective_pass(1) for grep { $_->can('effective_pass') } @{$self->{+SUBEVENTS}};
-	}
-}
-
-{
-	no warnings 'redefine';
-
-	sub set_subevents {
-		my $self      = shift;
-		my @subevents = @_;
-
-		if ($self->{+EFFECTIVE_PASS}) {
-			$_->set_effective_pass(1) for grep { $_->can('effective_pass') } @subevents;
-		}
-
-		$self->{+SUBEVENTS} = \@subevents;
-	}
-
-	sub set_effective_pass {
-		my $self = shift;
-		my ($pass) = @_;
-
-		if ($pass) {
-			$_->set_effective_pass(1) for grep { $_->can('effective_pass') } @{$self->{+SUBEVENTS}};
-		}
-		elsif ($self->{+EFFECTIVE_PASS} && !$pass) {
-			for my $s (grep { $_->can('effective_pass') } @{$self->{+SUBEVENTS}}) {
-				$_->set_effective_pass(0) unless $s->can('todo') && defined $s->todo;
-			}
-		}
-
-		$self->{+EFFECTIVE_PASS} = $pass;
-	}
-}
-
-sub summary {
     my $self = shift;
 
-    my $name = $self->{+NAME} || "Nameless Subtest";
+    $self->SUPER::init();
 
-    my $todo = $self->{+TODO};
-    if ($todo) {
-        $name .= " (TODO: $todo)";
-    }
-    elsif (defined $todo) {
-        $name .= " (TODO)"
-    }
+    $self->{+NEST_EVENTS} ||= delete $self->{subevents} || [];
+    $self->{+NEST_BUFFERED} ||= delete $self->{buffered};
 
-    return $name;
+    # Legacy
+    $self->{subevents} = $self->{+NEST_EVENTS};
+    $self->{buffered}  = $self->{+NEST_BUFFERED};
+
+    if (my $amnesty = $self->amnesty) {
+        $_->set_nest_amnesty($amnesty) for @{$self->{+NEST_EVENTS}};
+    }
+}
+
+sub buffered { $_[0]->{+NEST_BUFFERED} }
+sub set_buffered { $_[0]->{+NEST_BUFFERED} = $_[0]->{buffered} = $_[1] }
+
+sub set_nest_events {
+    my $self = shift;
+    my ($events) = @_;
+
+    $self->{+NEST_EVENTS} = $events;
+
+    # Legacy
+    $self->{subevents} = $self->{+NEST_EVENTS};
+
+    if (my $amnesty = $self->amnesty) {
+        $_->set_nest_amnesty($amnesty) for @{$self->{+NEST_EVENTS}};
+    }
+}
+
+sub set_assertion_amnesty {
+    my $self = shift;
+    my ($bool_or_ref) = @_;
+
+    $self->SUPER::set_assertion_amnesty($bool_or_ref);
+
+    $_->set_nest_amnesty($self->amnesty) for @{$self->{+NEST_EVENTS}};
 }
 
 1;

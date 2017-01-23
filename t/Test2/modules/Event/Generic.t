@@ -14,7 +14,15 @@ sub tool {
 }
 
 my $e;
-intercept { $e = tool() };
+my $warnings = warnings {
+    intercept { $e = tool() };
+};
+
+like(
+    $warnings->[0],
+    qr/Test2::Event::Generic is deprecated!/,
+    "Got warning",
+);
 
 ok($e,                               "got event");
 ok($e->isa('Test2::Event'),          "It is an event");

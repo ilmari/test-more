@@ -74,7 +74,6 @@ ok($one->isa('Test2::Hub'), "inheritence");
     def is => ($ran, 1, "ran the mocked process");
     def is => ($event, $bail, "got our event");
     def is => ($event->nested, 3, "nested was set");
-    def is => ($one->bailed_out, $event, "bailed");
 }
 
 do_def;

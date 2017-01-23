@@ -2,8 +2,10 @@ package Test2::Event::Generic;
 use strict;
 use warnings;
 
-use Carp qw/croak/;
+use Carp qw/croak cluck/;
 use Scalar::Util qw/reftype/;
+
+cluck "Test2::Event::Generic is deprecated!";
 
 our $VERSION = '1.302077';
 
@@ -23,6 +25,8 @@ my %DEFAULTS = (
 
 sub init {
     my $self = shift;
+
+    $self->SUPER::init();
 
     for my $field (@FIELDS) {
         my $val = defined $self->{$field} ? delete $self->{$field} : $DEFAULTS{$field};

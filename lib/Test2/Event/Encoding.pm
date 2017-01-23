@@ -9,6 +9,7 @@ use Test2::Util::HashBase qw/encoding/;
 
 sub init {
     my $self = shift;
+    $self->SUPER::init();
     defined $self->{+ENCODING} or $self->trace->throw("'encoding' is a required attribute");
 }
 

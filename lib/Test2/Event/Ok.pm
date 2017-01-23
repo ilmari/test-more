@@ -4,45 +4,106 @@ use warnings;
 
 our $VERSION = '1.302077';
 
-
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{
-    pass effective_pass name todo
+    pass effective_pass name
 };
 
 sub init {
     my $self = shift;
 
+    $self->SUPER::init();
+
+    $self->{+ASSERTION_AMNESTY} ||= \($self->{todo})
+        if defined $self->{todo};
+
+    # Legacy support
+    $self->{todo} = ${$self->{+ASSERTION_AMNESTY}} if ref $self->{+ASSERTION_AMNESTY};
+
     # Do not store objects here, only true or false
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
-    $self->{+EFFECTIVE_PASS} = $self->{+PASS} || (defined($self->{+TODO}) ? 1 : 0);
+    $self->{+EFFECTIVE_PASS} = $self->{+PASS} || (defined($self->{+ASSERTION_AMNESTY}) ? 1 : 0);
+}
+
+sub default_name       { "Nameless Assertion" }
+sub spec_version       { 1 }
+sub causes_fail        { !$_[0]->{+EFFECTIVE_PASS} }
+sub assertion          { my $str = $_[0]->{+NAME}; $str ? \$str : 1 }
+sub assertion_pass     { $_[0]->{+PASS} }
+sub assertion_no_debug { 1 }
+
+sub assertion_amnesty {
+    my $self = shift;
+    my $amnesty = $self->{+ASSERTION_AMNESTY};
+    return $amnesty if defined $amnesty;
+    return undef if $self->{+PASS};
+    return $self->{+EFFECTIVE_PASS};
+}
+
+sub set_assertion_amnesty {
+    my $self = shift;
+    my ($bool_or_ref) = @_;
+    $self->{+ASSERTION_AMNESTY} = $bool_or_ref;
+    $self->{+EFFECTIVE_PASS} = $bool_or_ref ? 1 : $self->{+PASS};
+    $self->{todo} = $$bool_or_ref if ref($bool_or_ref);
+}
+
+sub set_nest_amnesty {
+    my $self = shift;
+    my ($bool_or_ref) = @_;
+    $self->{+NEST_AMNESTY} = $bool_or_ref;
+    $self->{+EFFECTIVE_PASS} = $bool_or_ref ? 1 : $self->{+PASS};
+}
+
+sub todo {
+    my $self     = shift;
+    my $todo_ref = $self->{+ASSERTION_AMNESTY};
+    return undef unless ref($todo_ref);
+    return $$todo_ref;
 }
 
 {
     no warnings 'redefine';
-    sub set_todo {
+
+    sub set_effective_pass {
         my $self = shift;
-        my ($todo) = @_;
-        $self->{+TODO} = $todo;
-        $self->{+EFFECTIVE_PASS} = defined($todo) ? 1 : $self->{+PASS};
+        my ($bool) = @_;
+
+        if ($bool) {
+            $self->set_assertion_amnesty($bool) unless $self->assertion_amnesty;
+        }
+        else {
+            $self->set_assertion_amnesty($bool);
+        }
+
+        # Set exact value, as requested
+        $self->{+EFFECTIVE_PASS} = $bool;
     }
 }
 
-sub increments_count { 1 };
+sub set_todo {
+    my $self = shift;
+    my ($todo) = @_;
 
-sub causes_fail { !$_[0]->{+EFFECTIVE_PASS} }
+    if (defined($todo)) {
+        $self->set_assertion_amnesty(\$todo);
+    }
+    else {
+        $self->set_assertion_amnesty(0);
+    }
+}
 
 sub summary {
     my $self = shift;
 
-    my $name = $self->{+NAME} || "Nameless Assertion";
+    my $name = $self->{+NAME} || $self->default_name;
 
-    my $todo = $self->{+TODO};
+    my $todo = $self->todo;
     if ($todo) {
         $name .= " (TODO: $todo)";
     }
     elsif (defined $todo) {
-        $name .= " (TODO)"
+        $name .= " (TODO)";
     }
 
     return $name;
@@ -99,11 +160,6 @@ Name of the test.
 
 This is the true/false value of the test after TODO and similar modifiers are
 taken into account.
-
-=item $b = $e->allow_bad_name
-
-This relaxes the test name checks such that they allow characters that can
-confuse a TAP parser.
 
 =back
 

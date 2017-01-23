@@ -9,6 +9,7 @@ use Test2::Util::HashBase qw/version/;
 
 sub init {
     my $self = shift;
+    $self->SUPER::init();
     defined $self->{+VERSION} or $self->trace->throw("'version' is a required attribute");
 }
 

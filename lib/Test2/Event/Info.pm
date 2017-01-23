@@ -2,7 +2,11 @@ package Test2::Event::Info;
 use strict;
 use warnings;
 
+use Carp qw/cluck/;
+
 use Scalar::Util qw/blessed/;
+
+cluck __PACKAGE__ . " is deprecated!";
 
 our $VERSION = '1.302077';
 

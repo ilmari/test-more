@@ -9,10 +9,16 @@ BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw/message/;
 
 sub init {
+    $_[0]->SUPER::init();
     $_[0]->{+MESSAGE} = 'undef' unless defined $_[0]->{+MESSAGE};
 }
 
 sub summary { $_[0]->{+MESSAGE} }
+
+sub gravity { 0 }
+
+sub diag      { ref($_[0]->{+MESSAGE}) ? undef             : [$_[0]->{+MESSAGE}] }
+sub diag_data { ref($_[0]->{+MESSAGE}) ? $_[0]->{+MESSAGE} : undef }
 
 1;
 

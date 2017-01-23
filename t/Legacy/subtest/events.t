@@ -10,6 +10,9 @@ my $events = intercept {
     };
 };
 
+use Data::Dumper;
+print Dumper($events);
+
 my $st = $events->[-1];
 isa_ok($st, 'Test2::Event::Subtest');
 ok(my $id = $st->subtest_id, "got an id");
