@@ -18,8 +18,8 @@ is($res->[0]->message, 'Subtest: foo', "got subtest note");
 isa_ok($res->[1], 'Test2::Event::Subtest');
 ok($res->[1]->pass, "subtest passed");
 
-my $subs = $res->[1]->subevents;
-is(@$subs, 2, "got all subevents");
+my $subs = $res->[1]->nest_events;
+is(@$subs, 2, "got all nested events");
 
 isa_ok($subs->[0], 'Test2::Event::Ok');
 is($subs->[0]->pass, 1, "subtest ok passed");

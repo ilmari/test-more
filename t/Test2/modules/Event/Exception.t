@@ -14,4 +14,24 @@ is($exception->summary, "Exception: evil at lake_of_fire.t line 6", "Got summary
 
 ok($exception->diagnostics, "Exception events are counted as diagnostics");
 
+print STDERR <<EOT;
+
+*********************************************************************
+*********************************************************************
+*********************************************************************
+
+FIX ME! FIX ME!
+FIX ME! FIX ME!
+FIX ME! FIX ME!
+FIX ME! FIX ME!
+FIX ME! FIX ME!
+FIX ME! FIX ME!
+You need to test the new Event.pm
+
+*********************************************************************
+*********************************************************************
+*********************************************************************
+EOT
+
+
 done_testing;

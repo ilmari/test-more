@@ -134,4 +134,24 @@ intercept { $e = tool(causes_fail => 1, increments_count => 'a') };
 is($e->causes_fail, 1, "attr from constructor");
 is($e->increments_count, 'a', "attr from constructor");
 
+print STDERR <<EOT;
+
+*********************************************************************
+*********************************************************************
+*********************************************************************
+
+FIX ME! FIX ME!
+FIX ME! FIX ME!
+FIX ME! FIX ME!
+FIX ME! FIX ME!
+FIX ME! FIX ME!
+FIX ME! FIX ME!
+You need to test the new Event.pm
+
+*********************************************************************
+*********************************************************************
+*********************************************************************
+EOT
+
+
 done_testing;

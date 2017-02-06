@@ -140,6 +140,8 @@ sub new_from_legacy {
     my ($orig, %override) = @_;
     my $from = $orig->spec_version || 0;
 
+    die "This is still a work in progress, and may not even be needed";
+
     # Set up initial state
     my $fields = {
         _orig => $orig,

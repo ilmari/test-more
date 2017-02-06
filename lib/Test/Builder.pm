@@ -647,22 +647,23 @@ sub ok {
             pass           => $test,
             name           => $name,
             effective_pass => $test,
-            subevents      => $subevents,
-            subtest_id     => $subtest_id,
+            nest_events    => $subevents,
+            nest_id        => $subtest_id,
             buffered       => $subtest_buffered,
             _meta => {'Test::Builder' => $result},
         );
     }
     else {
-        $e = bless {
-            trace          => bless({%$trace}, 'Test2::Util::Trace'),
-            pass           => $test,
-            name           => $name,
-            effective_pass => $test,
-            _meta => {'Test::Builder' => $result},
-            @attrs,
+        $e = bless({
+                trace          => bless({%$trace}, 'Test2::Util::Trace'),
+                pass           => $test,
+                name           => $name,
+                effective_pass => $test,
+                _meta => {'Test::Builder' => $result},
+                @attrs,
             },
-            'Test2::Event::Ok';
+            'Test2::Event::Ok'
+        );
     }
 
     $hub->send($e);

@@ -97,7 +97,7 @@ END { 1 while unlink($tmpfile) }
     $tb->skip("wibble\nmoof");
     $tb->todo_skip("todo\nskip\n");
 
-    $Test->is_eq( $fakeout, <<OUTPUT ) || print STDERR $fakeout;
+    my $want = <<OUTPUT;
 1..5
 ok 1 - ok
 ok 2 - ok
@@ -110,4 +110,10 @@ not ok 5 # TODO & SKIP todo
 # skip
 # 
 OUTPUT
+
+    $Test->is_eq( $fakeout, $want ) || do {
+        require Data::Dumper;
+        local $Data::Dumper::Useqq = 1;
+        print Data::Dumper::Dumper($fakeout, $want);
+    };
 }

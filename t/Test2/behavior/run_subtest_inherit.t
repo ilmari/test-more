@@ -14,9 +14,9 @@ my $e = shift @$events;
 ok($e->isa('Test2::Event::Subtest'), "got a subtest event");
 is($e->trace->file, $file, "subtest is at correct file");
 is($e->trace->line, $line, "subtest is at correct line");
-my $plan = pop @{$e->subevents};
+my $plan = pop @{$e->nest_events};
 ok($plan->isa('Test2::Event::Plan'), "Removed plan");
-for my $se (@{$e->subevents}) {
+for my $se (@{$e->nest_events}) {
     is($se->trace->file, $file, "subtest event ($se->{name}) is at correct file");
     is($se->trace->line, $line, "subtest event ($se->{name}) is at correct line");
     ok($se->pass, "subtest event ($se->{name}) passed");
@@ -34,9 +34,9 @@ $e = shift @$events;
 ok($e->isa('Test2::Event::Subtest'), "got a subtest event");
 is($e->trace->file, $file, "subtest is at correct file");
 is($e->trace->line, $line, "subtest is at correct line");
-$plan = pop @{$e->subevents};
+$plan = pop @{$e->nest_events};
 ok($plan->isa('Test2::Event::Plan'), "Removed plan");
-for my $se (@{$e->subevents}) {
+for my $se (@{$e->nest_events}) {
     ok($se->trace->file ne $file, "subtest event ($se->{name}) is not in our file");
     ok($se->trace->line ne $line, "subtest event ($se->{name}) is not on our line");
     ok($se->pass, "subtest event ($se->{name}) passed");

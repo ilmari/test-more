@@ -53,7 +53,6 @@ sub like ($$;$) {
     return $ok;
 }
 
-
 require Test::More;
 Test::More->import(tests => 11, import => ['is_deeply']);
 

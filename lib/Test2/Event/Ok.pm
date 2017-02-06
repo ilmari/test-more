@@ -28,7 +28,7 @@ sub init {
 sub default_name       { "Nameless Assertion" }
 sub spec_version       { 1 }
 sub causes_fail        { !$_[0]->{+EFFECTIVE_PASS} }
-sub assertion          { my $str = $_[0]->{+NAME}; $str ? \$str : 1 }
+sub assertion          { my $str = $_[0]->{+NAME}; defined($str) ? \$str : 1 }
 sub assertion_pass     { $_[0]->{+PASS} }
 sub assertion_no_debug { 1 }
 

@@ -22,7 +22,7 @@ sub process {
     my $self = shift;
     my ($e) = @_;
     $e->set_nested($self->nested);
-    $e->set_in_subtest($self->{+ID});
+    $e->set_nest_parent($self->{+ID});
     $self->SUPER::process($e);
 }
 

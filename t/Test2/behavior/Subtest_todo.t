@@ -19,7 +19,7 @@ my $events = intercept {
 ok($events->[1],                 'Test2::Event::Subtest', 'subtest ran');
 ok($events->[1]->effective_pass, 'Test2::Event::Subtest', 'subtest effective_pass is true');
 ok($events->[1]->todo,           'testing todo',          'subtest todo is set to expected value');
-my @oks = grep { $_->isa('Test2::Event::Ok') } @{$events->[1]->subevents};
+my @oks = grep { $_->isa('Test2::Event::Ok') } @{$events->[1]->nest_events};
 is(scalar @oks, 2, 'got 2 Ok events in the subtest');
 ok($oks[0]->pass,           'first event passed');
 ok($oks[0]->effective_pass, 'first event effective_pass is true');
