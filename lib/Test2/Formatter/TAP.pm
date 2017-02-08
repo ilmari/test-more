@@ -81,15 +81,15 @@ if ($^C) {
 sub write {
     my ($self, $e, $num, $f) = @_;
 
-    my @tap = $self->event_tap($e, $f, $num);
+    my $tap = $self->event_tap($e, $f, $num) or return;
 
     my $handles = $self->{+HANDLES};
-    my $nesting = $e->nested || 0;
+    my $nesting = defined($e->{nested}) ? $e->{nested} || 0 : $e->nested || 0;
     my $indent = '    ' x $nesting;
 
     # Local is expensive! Only do it if we really need to.
     local($\, $,) = (undef, '') if $\ || $,;
-    for my $set (@tap) {
+    for my $set (@$tap) {
         no warnings 'uninitialized';
         my ($hid, $msg) = @$set;
         next unless $msg;
@@ -103,8 +103,6 @@ sub write {
 sub event_tap {
     my ($self, $e, $f, $num) = @_;
 
-    $f ||= $e->facets;
-
     my @tap;
 
     # If this IS the first event the plan should come first
@@ -114,7 +112,7 @@ sub event_tap {
     # The assertion is most important, if present.
     if ($f->{assert}) {
         push @tap => $self->assert_tap($e, $f, $num);
-        push @tap => $self->debug_tap($e, $f, $num) unless $e->no_debug || $f->{assert}->pass;
+        push @tap => $self->debug_tap($e, $f, $num) unless $e->{no_debug} || $e->no_debug || $f->{assert}->{pass};
     }
 
     # Now lets see the diagnostics messages
@@ -130,7 +128,7 @@ sub event_tap {
     # Use the summary as a fallback if nothing else is usable.
     push @tap => $self->summary_tap($e, $num) unless @tap || grep { $f->{$_} } qw/assert plan info stop/;
 
-    return @tap;
+    return \@tap;
 }
 
 sub plan_tap {
@@ -157,8 +155,8 @@ sub assert_tap {
     my ($e, $f, $num) = @_;
 
     my $assert = $f->{assert};
-    my $pass = $assert->pass;
-    my $name = $assert->details;
+    my $pass = $assert->{pass};
+    my $name = $assert->{details};
 
     my $ok = $pass ? 'ok' : 'not ok';
     $ok .= " $num" unless $self->{+NO_NUMBERS};
@@ -178,11 +176,11 @@ sub assert_tap {
         my %directives;
 
         for my $am (@{$f->{amnesty}}) {
-            next if $am->inherited;
-            my $action = $am->action or next;
+            next if $am->{inherited};
+            my $action = $am->{action} or next;
             $is_skip = 1 if $action eq 'skip';
 
-            $directives{$action} ||= $am->details;
+            $directives{$action} ||= $am->{details};
         }
 
         my %seen;
@@ -200,7 +198,7 @@ sub assert_tap {
     $ok .= " - $name" if defined $name && !($is_skip && !$name);
 
     my @subtap;
-    if ($f->{nest} && $f->{nest}->buffered) {
+    if ($f->{nest} && $f->{nest}->{buffered}) {
         $ok .= ' {';
 
         # In a verbose harness we indent the extra since they will appear
@@ -221,8 +219,8 @@ sub assert_tap {
 
             # This indents all output lines generated for the sub-events.
             # index 0 is the filehandle, index 1 is the message we want to indent.
-            map { $_->[1] =~ s/^(.*\S.*)$/    $1/mg; $_ } $self->event_tap($_, $f2, $count);
-        } @{$f->{nest}->events};
+            map { $_->[1] =~ s/^(.*\S.*)$/    $1/mg; $_ } @{$self->event_tap($_, $f2, $count)};
+        } @{$f->{nest}->{events}};
 
         push @subtap => [OUT_STD, "}\n"];
     }
@@ -255,7 +253,7 @@ sub debug_tap {
     # Figure out the debug info, this is typically the file name and line
     # number, but can also be a custom message. If no trace object is provided
     # then we have nothing useful to display.
-    my $name  = $e->name;
+    my $name  = $f->{assert}->{details};
     my $trace = $e->trace;
     my $debug = $trace ? $trace->debug : "[No trace info available]";
 
@@ -288,7 +286,7 @@ sub info_tap {
     my $IO = $e->gravity > 0 ? OUT_ERR : OUT_STD;
 
     return map {
-        my $details = $_->details;
+        my $details = $_->{details};
 
         my $msg;
         if (ref($details)) {
